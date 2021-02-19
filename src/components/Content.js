@@ -1,26 +1,37 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./Content.css";
 import { Service} from "rsi-react-web-components";
 
+const partnerSvc = Service.lookup("CloudPartnerService", "partner");
 const txnSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
 
-const initialPartners = [
-  { lgu: "legazpi", paypartner: { landbank: 0, dbp: 0, paymaya: 0, gcash: 0, total: 0 }},
-  { lgu: "ligao", paypartner: { landbank: 0, dbp: 0, paymaya: 0, gcash: 0, total: 0 }},
-  { lgu: "iriga", paypartner: { landbank: 0, dbp: 0, paymaya: 0, gcash: 0, total: 0 }},
-  { lgu: "tagbilaran", paypartner: { landbank: 0, dbp: 0, paymaya: 0, gcash: 0, total: 0 }},
-  { lgu: "ubay", paypartner: { landbank: 0, dbp: 0, paymaya: 0, gcash: 0, total: 0 }},
-  { lgu: "nabunturan", paypartner: { landbank: 0, dbp: 0, paymaya: 0, gcash: 0, total: 0 }},
-];
-
 const Content = (props) => {
+  const [lgus, setLgus] = useState([]);
   const [payPartners, setPayPartners] = useState([]);
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  const lgusRef = useRef([]);
+
+  useEffect(() => {
+    partnerSvc.invoke("getActivePartners", null, (err, lguList) => {
+      if (!err) {
+        const lgus = lguList.map(lgu => ({id: lgu.id, name: lgu.name}))
+        setLgus(lgus);
+        lgusRef.current = lgus;
+      } 
+    });
+  }, []);
+
+  useEffect(() => {
+    if (lgus.length === 0 && loading) return;
+
     txnSvc.invoke("getInitialInfo", {}, (err, info) => {
       if (!err) {
+        info.partners.forEach(partner => {
+          const lgu = lgus.find(lgu => lgu.id === partner.id);
+          partner.name = lgu.name;
+        })
         setPartners(info.partners);
         setPayPartners(info.paypartners);
       } else {
@@ -28,16 +39,20 @@ const Content = (props) => {
       }
       setLoading(false);
     });
-  }, []);
+  }, [lgus]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const intervalId = setInterval(() => {
       txnSvc.invoke("getTxnCounts", {}, (err, partners) => {
         if (!err) {
+          partners.forEach(partner => {
+            const lgu = lgusRef.current.find(lgu => lgu.id === partner.id);
+            partner.name = lgu.name;
+          })
           setPartners(partners);
         }
       });
-    }, 60000);
+    }, 5000);
     return () => {clearInterval(intervalId)};
   }, [])
 
