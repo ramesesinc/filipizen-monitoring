@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./Content.css";
 import { Service } from "rsi-react-web-components";
 
@@ -25,8 +25,6 @@ const Content = (props) => {
   }, []);
 
   useEffect(() => {
-    if (lgus.length === 0 && loading) return;
-
     txnSvc.invoke("getInitialInfo", {}, (err, info) => {
       if (!err) {
         info.partners.forEach((partner) => {
@@ -36,6 +34,7 @@ const Content = (props) => {
         setPartners(info.partners);
         setPayPartners(info.paypartners);
         setPeriod(info.period);
+        getTxnCounts();
       } else {
         console.log("Error loading partners ", err);
       }
@@ -43,18 +42,33 @@ const Content = (props) => {
     });
   }, [lgus]);
 
+  const getTxnCounts = useCallback(() => {
+    txnSvc.invoke("getTxnCounts", {}, (err, partners) => {
+      if (!err) {
+        partners.forEach((partner) => {
+          const lgu = lgusRef.current.find((lgu) => lgu.id === partner.id);
+          partner.name = lgu.name;
+        });
+        const p1 = partners.filter((p) => p.paypartner.total > 0);
+        const p2 = partners.filter((p) => p.paypartner.total === 0);
+        p1.sort((a, b) => {
+          if (a.paypartner.total < b.paypartner.total) return 1;
+          if (a.paypartner.total > b.paypartner.total) return -1;
+          return 0;
+        });
+        p2.sort((a, b) => {
+          if (a.name < b.name) return -1;
+          if (a.name > b.name) return 1;
+          return 0;
+        });
+
+        setPartners([...p1, ...p2]);
+      }
+    });
+  }, [lgus]);
+
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      txnSvc.invoke("getTxnCounts", {}, (err, partners) => {
-        if (!err) {
-          partners.forEach((partner) => {
-            const lgu = lgusRef.current.find((lgu) => lgu.id === partner.id);
-            partner.name = lgu.name;
-          });
-          setPartners(partners);
-        }
-      });
-    }, 300000);
+    const intervalId = setInterval(() => getTxnCounts, 300000);
     return () => {
       clearInterval(intervalId);
     };
