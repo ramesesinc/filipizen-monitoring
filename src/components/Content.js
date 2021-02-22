@@ -54,7 +54,7 @@ const Content = (props) => {
           setPartners(partners);
         }
       });
-    }, 5000);
+    }, 300000);
     return () => {
       clearInterval(intervalId);
     };
