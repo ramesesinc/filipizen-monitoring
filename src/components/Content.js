@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./Content.css";
-import { Service } from "rsi-react-web-components";
+import { Service, Combobox } from "rsi-react-web-components";
+import logo from "/../assets/logo.png"
 
 const partnerSvc = Service.lookup("CloudPartnerService", "partner");
 const txnSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
+
+const months = [
+      {caption:"JANUARY",idx:1},
+      {caption:"FEBRUARY",idx:2},
+    ]
+
+
 
 const Content = (props) => {
   const [lgus, setLgus] = useState([]);
@@ -11,8 +19,12 @@ const Content = (props) => {
   const [partners, setPartners] = useState([]);
   const [period, setPeriod] = useState("");
   const [loading, setLoading] = useState(true);
+  const [month, setMonth] = useState(months[0]);
 
   const lgusRef = useRef([]);
+
+
+
 
   useEffect(() => {
     partnerSvc.invoke("getActivePartners", null, (err, lguList) => {
@@ -43,7 +55,7 @@ const Content = (props) => {
   }, [lgus]);
 
   const getTxnCounts = useCallback(() => {
-    txnSvc.invoke("getTxnCounts", {}, (err, partners) => {
+    txnSvc.invoke("getTxnCounts", { }, (err, partners) => {
       if (!err) {
         partners.forEach((partner) => {
           const lgu = lgusRef.current.find((lgu) => lgu.id === partner.id);
@@ -79,41 +91,47 @@ const Content = (props) => {
   }
 
   return (
-    <div>
       <div className={styles.Content}>
         <center>
-          <h1>ePayment Monitoring</h1>
+          <img src={logo} width="250"/>
           <h3>{period}</h3>
+          <Combobox  caption="SELECT MONTH" value={month} onChange={setMonth} items={months}  className={styles.Content__months} expr={month => month.caption}/>
         </center>
-        <div className={styles.Content__header}>
-          <p className={styles.Content__lgu}>LGU</p>
-          {payPartners.map((payPartner) => (
-            <p key={payPartner.name} className={styles.Content__partners}>
-              {payPartner.name}
-            </p>
-          ))}
-        </div>
-        {partners.map((partner) => {
-          const paymentComponents = payPartners.map((payPartner) => {
-            const count = partner.paypartner[payPartner.name.toLowerCase()];
+        <table>
+          <thead>
+            <tr>
+                <th  className={styles.Content__partners} scope="col">LGU</th>
+              {payPartners.map((payPartner) => (
+                <th key={payPartner.name} className={styles.Content__partners} scope="col">{payPartner.name}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            
+          {partners.map((partner) => {
+            const paymentComponents = payPartners.map((payPartner) => {
+              const count = partner.paypartner[payPartner.name.toLowerCase()];
+              return (
+                <td
+                  key={partner.id + ":" + payPartner.name}
+                  className={styles.Content__partners}
+                  data-label={payPartner.name}
+                >
+                  {count > 0 && count}
+                </td>
+              );
+            });
             return (
-              <p
-                key={partner.id + ":" + payPartner.name}
-                className={styles.Content__partners}
-              >
-                {count > 0 && count}
-              </p>
+              <tr key={partner.name} className={styles.Content__subContainer}>
+                <td className={styles.Content__lgu}> {partner.name} </td>
+                {paymentComponents}
+              </tr>
             );
-          });
-          return (
-            <div key={partner.name} className={styles.Content__subContainer}>
-              <p className={styles.Content__lgu}> {partner.name} </p>
-              {paymentComponents}
-            </div>
-          );
-        })}
+          })}
+          </tbody>
+        </table>
+        <pre>{JSON.stringify(month, null, 2)}</pre>
       </div>
-    </div>
   );
 };
 
