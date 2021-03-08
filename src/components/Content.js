@@ -1,9 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./Content.css";
-import { Service } from "rsi-react-web-components";
+import { Service, FormPanel, Combobox } from "rsi-react-web-components";
+import logo from "/../assets/logo.png"
 
 const partnerSvc = Service.lookup("CloudPartnerService", "partner");
 const txnSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
+
+const months = [
+      {caption:"JANUARY",idx:1},
+      {caption:"FEBRUARY",idx:2},
+      {caption:"MARCH",idx:3},
+      {caption:"APRIL",idx:4},
+      {caption:"MAY",idx:5},
+      {caption:"JUNE",idx:6},
+      {caption:"JULY",idx:7},
+      {caption:"AUGUST",idx:8},
+      {caption:"SEPTEMBER",idx:9},
+      {caption:"OCTOBER",idx:10},
+      {caption:"NOVEMBER",idx:11},
+      {caption:"DECEMBER",idx:12},
+    ]
 
 const Content = (props) => {
   const [lgus, setLgus] = useState([]);
@@ -11,6 +27,7 @@ const Content = (props) => {
   const [partners, setPartners] = useState([]);
   const [period, setPeriod] = useState("");
   const [loading, setLoading] = useState(true);
+  const [params, setParams] = useState({month: months[0]});
 
   const lgusRef = useRef([]);
 
@@ -24,8 +41,8 @@ const Content = (props) => {
     });
   }, []);
 
-  useEffect(() => {
-    txnSvc.invoke("getInitialInfo", {}, (err, info) => {
+  const getInitialInfo  = () => {
+    txnSvc.invoke("getInitialInfo", params, (err, info) => {
       if (!err) {
         info.partners.forEach((partner) => {
           const lgu = lgus.find((lgu) => lgu.id === partner.id);
@@ -40,10 +57,14 @@ const Content = (props) => {
       }
       setLoading(false);
     });
+  }
+
+  useEffect(() => {
+    getInitialInfo();
   }, [lgus]);
 
   const getTxnCounts = useCallback(() => {
-    txnSvc.invoke("getTxnCounts", {}, (err, partners) => {
+    txnSvc.invoke("getTxnCounts", params, (err, partners) => {
       if (!err) {
         partners.forEach((partner) => {
           const lgu = lgusRef.current.find((lgu) => lgu.id === partner.id);
@@ -65,7 +86,7 @@ const Content = (props) => {
         setPartners([...p1, ...p2]);
       }
     });
-  }, [lgus]);
+  }, [lgus, params]);
 
   useEffect(() => {
     const intervalId = setInterval(() => getTxnCounts, 300000);
@@ -74,46 +95,57 @@ const Content = (props) => {
     };
   }, []);
 
+  useEffect(() => {
+    getInitialInfo();
+  }, [params]);
+
   if (loading) {
     return <div>Loading</div>;
   }
 
   return (
-    <div>
       <div className={styles.Content}>
         <center>
-          <h1>ePayment Monitoring</h1>
+          <img src={logo} width="250"/>
           <h3>{period}</h3>
+          <FormPanel context={params} handler={setParams}>
+            <Combobox  name="month" caption="SELECT MONTH" items={months}  className={styles.Content__months} expr={month => month.caption}/>
+          </FormPanel>
         </center>
-        <div className={styles.Content__header}>
-          <p className={styles.Content__lgu}>LGU</p>
-          {payPartners.map((payPartner) => (
-            <p key={payPartner.name} className={styles.Content__partners}>
-              {payPartner.name}
-            </p>
-          ))}
-        </div>
-        {partners.map((partner) => {
-          const paymentComponents = payPartners.map((payPartner) => {
-            const count = partner.paypartner[payPartner.name.toLowerCase()];
+        <table>
+          <thead>
+            <tr>
+                <th  className={styles.Content__partners} scope="col">LGU</th>
+              {payPartners.map((payPartner) => (
+                <th key={payPartner.name} className={styles.Content__partners} scope="col">{payPartner.name}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            
+          {partners.map((partner) => {
+            const paymentComponents = payPartners.map((payPartner) => {
+              const count = partner.paypartner[payPartner.name.toLowerCase()];
+              return (
+                <td
+                  key={partner.id + ":" + payPartner.name}
+                  className={styles.Content__partners}
+                  data-label={payPartner.name}
+                >
+                  {count > 0 && count}
+                </td>
+              );
+            });
             return (
-              <p
-                key={partner.id + ":" + payPartner.name}
-                className={styles.Content__partners}
-              >
-                {count > 0 && count}
-              </p>
+              <tr key={partner.name} className={styles.Content__subContainer}>
+                <td className={styles.Content__lgu}> {partner.name} </td>
+                {paymentComponents}
+              </tr>
             );
-          });
-          return (
-            <div key={partner.name} className={styles.Content__subContainer}>
-              <p className={styles.Content__lgu}> {partner.name} </p>
-              {paymentComponents}
-            </div>
-          );
-        })}
+          })}
+          </tbody>
+        </table>
       </div>
-    </div>
   );
 };
 
