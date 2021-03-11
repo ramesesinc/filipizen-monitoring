@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./Content.css";
-import { Service, Combobox } from "rsi-react-web-components";
+import { Service, FormPanel, Combobox } from "rsi-react-web-components";
 import logo from "/../assets/logo.png"
 
 const partnerSvc = Service.lookup("CloudPartnerService", "partner");
@@ -9,9 +9,17 @@ const txnSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
 const months = [
       {caption:"JANUARY",idx:1},
       {caption:"FEBRUARY",idx:2},
+      {caption:"MARCH",idx:3},
+      {caption:"APRIL",idx:4},
+      {caption:"MAY",idx:5},
+      {caption:"JUNE",idx:6},
+      {caption:"JULY",idx:7},
+      {caption:"AUGUST",idx:8},
+      {caption:"SEPTEMBER",idx:9},
+      {caption:"OCTOBER",idx:10},
+      {caption:"NOVEMBER",idx:11},
+      {caption:"DECEMBER",idx:12},
     ]
-
-
 
 const Content = (props) => {
   const [lgus, setLgus] = useState([]);
@@ -19,7 +27,7 @@ const Content = (props) => {
   const [partners, setPartners] = useState([]);
   const [period, setPeriod] = useState("");
   const [loading, setLoading] = useState(true);
-  const [month, setMonth] = useState(months[0]);
+  const [params, setParams] = useState({month: months[0]});
 
   const lgusRef = useRef([]);
 
@@ -36,8 +44,8 @@ const Content = (props) => {
     });
   }, []);
 
-  useEffect(() => {
-    txnSvc.invoke("getInitialInfo", {}, (err, info) => {
+  const getInitialInfo  = () => {
+    txnSvc.invoke("getInitialInfo", params, (err, info) => {
       if (!err) {
         info.partners.forEach((partner) => {
           const lgu = lgus.find((lgu) => lgu.id === partner.id);
@@ -52,10 +60,14 @@ const Content = (props) => {
       }
       setLoading(false);
     });
+  }
+
+  useEffect(() => {
+    getInitialInfo();
   }, [lgus]);
 
   const getTxnCounts = useCallback(() => {
-    txnSvc.invoke("getTxnCounts", { }, (err, partners) => {
+    txnSvc.invoke("getTxnCounts", params, (err, partners) => {
       if (!err) {
         partners.forEach((partner) => {
           const lgu = lgusRef.current.find((lgu) => lgu.id === partner.id);
@@ -77,7 +89,7 @@ const Content = (props) => {
         setPartners([...p1, ...p2]);
       }
     });
-  }, [lgus]);
+  }, [lgus, params]);
 
   useEffect(() => {
     const intervalId = setInterval(() => getTxnCounts, 300000);
@@ -85,6 +97,10 @@ const Content = (props) => {
       clearInterval(intervalId);
     };
   }, []);
+
+  useEffect(() => {
+    getInitialInfo();
+  }, [params]);
 
   if (loading) {
     return <div>Loading</div>;
@@ -95,7 +111,9 @@ const Content = (props) => {
         <center>
           <img src={logo} width="250"/>
           <h3>{period}</h3>
-          <Combobox  caption="SELECT MONTH" value={month} onChange={setMonth} items={months}  className={styles.Content__months} expr={month => month.caption}/>
+          <FormPanel context={params} handler={setParams}>
+            <Combobox  name="month" caption="SELECT MONTH" items={months}  className={styles.Content__months} expr={month => month.caption}/>
+          </FormPanel>
         </center>
         <table>
           <thead>
@@ -130,7 +148,6 @@ const Content = (props) => {
           })}
           </tbody>
         </table>
-        <pre>{JSON.stringify(month, null, 2)}</pre>
       </div>
   );
 };
