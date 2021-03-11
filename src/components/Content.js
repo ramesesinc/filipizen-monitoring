@@ -54,7 +54,6 @@ const Content = (props) => {
         setPayPartners(info.paypartners);
         setPeriod(info.period);
         setYears(info.years);
-        setParams({...params, year: info.years[info.years.size()-1]});
         getTxnCounts();
       } else {
         console.log("Error loading partners ", err);
