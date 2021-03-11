@@ -7,6 +7,7 @@ const partnerSvc = Service.lookup("CloudPartnerService", "partner");
 const txnSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
 
 const months = [
+      {caption:"ALL",idx:0},
       {caption:"JANUARY",idx:1},
       {caption:"FEBRUARY",idx:2},
       {caption:"MARCH",idx:3},
@@ -27,12 +28,10 @@ const Content = (props) => {
   const [partners, setPartners] = useState([]);
   const [period, setPeriod] = useState("");
   const [loading, setLoading] = useState(true);
-  const [params, setParams] = useState({month: months[0]});
+  const [years, setYears] = useState([]);
+  const [params, setParams] = useState({month: months[0], year: 2021});
 
   const lgusRef = useRef([]);
-
-
-
 
   useEffect(() => {
     partnerSvc.invoke("getActivePartners", null, (err, lguList) => {
@@ -54,6 +53,8 @@ const Content = (props) => {
         setPartners(info.partners);
         setPayPartners(info.paypartners);
         setPeriod(info.period);
+        setYears(info.years);
+        setParams({...params, year: info.years[info.years.size()-1]});
         getTxnCounts();
       } else {
         console.log("Error loading partners ", err);
@@ -111,10 +112,11 @@ const Content = (props) => {
         <center>
           <img src={logo} width="250"/>
           <h3>{period}</h3>
-          <FormPanel context={params} handler={setParams}>
-            <Combobox  name="month" caption="SELECT MONTH" items={months}  className={styles.Content__months} expr={month => month.caption}/>
-          </FormPanel>
         </center>
+        <FormPanel context={params} handler={setParams} row>
+            <Combobox  name="month" caption="MONTH" items={months}  className={styles.Content__months} expr={month => month.caption} fullWidth={false} />
+            <Combobox name="year" caption="YEAR" required={true} items={years} className={styles.Content__years} fullWidth={false}  />
+        </FormPanel>
         <table>
           <thead>
             <tr>

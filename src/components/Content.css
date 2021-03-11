@@ -18,8 +18,12 @@ body {
   text-align: left;
 }
 .Content__months{
-  width: 230px;
+  width: 200px;
 }
+.Content__years {
+  width: 100px;
+}
+
 h3{
   margin: 0px;;
 }
