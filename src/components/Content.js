@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styles from "./Content.css";
 import { Service, FormPanel, Combobox } from "rsi-react-web-components";
 import logo from "/../assets/logo.png"
 
-const partnerSvc = Service.lookup("CloudPartnerService", "partner");
-const txnSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
+const monitorSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
 
 const months = [
       {caption:"ALL",idx:0},
@@ -22,34 +21,19 @@ const months = [
       {caption:"DECEMBER",idx:12},
     ]
 
+  const initialYear = new Date().getFullYear();
+
 const Content = (props) => {
-  const [lgus, setLgus] = useState([]);
   const [payPartners, setPayPartners] = useState([]);
   const [partners, setPartners] = useState([]);
   const [period, setPeriod] = useState("");
   const [loading, setLoading] = useState(true);
   const [years, setYears] = useState([]);
-  const [params, setParams] = useState({month: months[0], year: 2021});
-
-  const lgusRef = useRef([]);
+  const [params, setParams] = useState({month: months[0], year: initialYear});
 
   useEffect(() => {
-    partnerSvc.invoke("getActivePartners", null, (err, lguList) => {
+    monitorSvc.invoke("getInitialInfo", params, (err, info) => {
       if (!err) {
-        const lgus = lguList.map((lgu) => ({ id: lgu.id, name: lgu.name }));
-        setLgus(lgus);
-        lgusRef.current = lgus;
-      }
-    });
-  }, []);
-
-  const getInitialInfo  = () => {
-    txnSvc.invoke("getInitialInfo", params, (err, info) => {
-      if (!err) {
-        info.partners.forEach((partner) => {
-          const lgu = lgus.find((lgu) => lgu.id === partner.id);
-          partner.name = lgu.name;
-        });
         setPartners(info.partners);
         setPayPartners(info.paypartners);
         setPeriod(info.period);
@@ -60,36 +44,15 @@ const Content = (props) => {
       }
       setLoading(false);
     });
-  }
-
-  useEffect(() => {
-    getInitialInfo();
-  }, [lgus]);
+  }, []);
 
   const getTxnCounts = useCallback(() => {
-    txnSvc.invoke("getTxnCounts", params, (err, partners) => {
+    monitorSvc.invoke("getTxnCounts", params, (err, partners) => {
       if (!err) {
-        partners.forEach((partner) => {
-          const lgu = lgusRef.current.find((lgu) => lgu.id === partner.id);
-          partner.name = lgu.name;
-        });
-        const p1 = partners.filter((p) => p.paypartner.total > 0);
-        const p2 = partners.filter((p) => p.paypartner.total === 0);
-        p1.sort((a, b) => {
-          if (a.paypartner.total < b.paypartner.total) return 1;
-          if (a.paypartner.total > b.paypartner.total) return -1;
-          return 0;
-        });
-        p2.sort((a, b) => {
-          if (a.name < b.name) return -1;
-          if (a.name > b.name) return 1;
-          return 0;
-        });
-
-        setPartners([...p1, ...p2]);
+        setPartners(partners);
       }
     });
-  }, [lgus, params]);
+  }, [params]);
 
   useEffect(() => {
     const intervalId = setInterval(() => getTxnCounts, 300000);
@@ -99,7 +62,7 @@ const Content = (props) => {
   }, []);
 
   useEffect(() => {
-    getInitialInfo();
+    getTxnCounts();
   }, [params]);
 
   if (loading) {
