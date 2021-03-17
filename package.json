@@ -51,6 +51,8 @@
     "dist"
   ],
   "dependencies": {
+    "highcharts": "^9.0.1",
+    "highcharts-react-official": "^3.0.0",
     "rsi-react-web-components": "^0.2.26"
   }
 }
