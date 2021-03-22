@@ -21,6 +21,11 @@ const months = [
       {caption:"DECEMBER",idx:12},
     ]
 
+const initialMeasurements = [
+      {caption: "Count", idx: 0},
+      {caption: "Amount", idx: 1}
+    ]
+
   const initialYear = new Date().getFullYear();
 
 const Content = (props) => {
@@ -30,6 +35,7 @@ const Content = (props) => {
   const [loading, setLoading] = useState(true);
   const [years, setYears] = useState([]);
   const [params, setParams] = useState({month: months[0], year: initialYear});
+  const [measurements, setMeasurements] = useState(initialMeasurements[0]);
 
   useEffect(() => {
     monitorSvc.invoke("getInitialInfo", params, (err, info) => {
@@ -78,6 +84,7 @@ const Content = (props) => {
         <FormPanel context={params} handler={setParams} row>
             <Combobox  name="month" caption="MONTH" items={months}  className={styles.Content__months} expr={month => month.caption} fullWidth={false} />
             <Combobox name="year" caption="YEAR" required={true} items={years} className={styles.Content__years} fullWidth={false}  />
+            <Combobox name="measurements" caption="MEASUREMENT" expr={measurements => measurements.caption} required={true} items={initialMeasurements} className={styles.Content__years} fullWidth={false}  />
         </FormPanel>
         <table>
           <thead>

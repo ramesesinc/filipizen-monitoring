@@ -6,7 +6,7 @@ import Graph from "./components/Graph";
 function Monitor() {
   return (
     <MasterTemplate>
-      <Graph />
+      <Content />
     </MasterTemplate>
   );
 }
