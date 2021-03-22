@@ -23,6 +23,9 @@ body {
 .Content__years {
   width: 100px;
 }
+.Content__measurement {
+  width: 150px;
+}
 
 h3{
   margin: 0px;;

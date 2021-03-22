@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styles from "./Content.css";
-import { Service, FormPanel, Combobox } from "rsi-react-web-components";
+import { Service, FormPanel, Combobox, currencyFormat } from "rsi-react-web-components";
 import logo from "/../assets/logo.png"
 
 const monitorSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
@@ -21,12 +21,12 @@ const months = [
       {caption:"DECEMBER",idx:12},
     ]
 
-const initialMeasurements = [
-      {caption: "Count", idx: 0},
-      {caption: "Amount", idx: 1}
-    ]
+const measurements = [
+    {name: "count", caption: "Count" },
+    {name: "amount", caption: "Amount"}
+  ]
 
-  const initialYear = new Date().getFullYear();
+const initialYear = new Date().getFullYear();
 
 const Content = (props) => {
   const [payPartners, setPayPartners] = useState([]);
@@ -34,9 +34,12 @@ const Content = (props) => {
   const [period, setPeriod] = useState("");
   const [loading, setLoading] = useState(true);
   const [years, setYears] = useState([]);
-  const [params, setParams] = useState({month: months[0], year: initialYear});
-  const [measurements, setMeasurements] = useState(initialMeasurements[0]);
-
+  const [params, setParams] = useState({
+    month: months[0], 
+    year: initialYear, 
+    measurement: measurements[0]
+  });
+  
   useEffect(() => {
     monitorSvc.invoke("getInitialInfo", params, (err, info) => {
       if (!err) {
@@ -44,7 +47,7 @@ const Content = (props) => {
         setPayPartners(info.paypartners);
         setPeriod(info.period);
         setYears(info.years);
-        getTxnCounts();
+        getTxnInfo();
       } else {
         console.log("Error loading partners ", err);
       }
@@ -52,23 +55,24 @@ const Content = (props) => {
     });
   }, []);
 
-  const getTxnCounts = useCallback(() => {
-    monitorSvc.invoke("getTxnCounts", params, (err, partners) => {
+  const getTxnInfo = useCallback(() => {
+    monitorSvc.invoke("getTxnInfo", params, (err, partners) => {
       if (!err) {
         setPartners(partners);
+        console.log("partners", partners)
       }
     });
   }, [params]);
 
   useEffect(() => {
-    const intervalId = setInterval(() => getTxnCounts, 300000);
+    const intervalId = setInterval(() => getTxnInfo, 300000);
     return () => {
       clearInterval(intervalId);
     };
   }, []);
 
   useEffect(() => {
-    getTxnCounts();
+    getTxnInfo();
   }, [params]);
 
   if (loading) {
@@ -84,14 +88,20 @@ const Content = (props) => {
         <FormPanel context={params} handler={setParams} row>
             <Combobox  name="month" caption="MONTH" items={months}  className={styles.Content__months} expr={month => month.caption} fullWidth={false} />
             <Combobox name="year" caption="YEAR" required={true} items={years} className={styles.Content__years} fullWidth={false}  />
-            <Combobox name="measurements" caption="MEASUREMENT" expr={measurements => measurements.caption} required={true} items={initialMeasurements} className={styles.Content__years} fullWidth={false}  />
+            <Combobox name="measurement" items={measurements} caption="MEASUREMENT" expr={measurements => measurements.caption} required={true} className={styles.Content__measurement} fullWidth={false}  />
         </FormPanel>
         <table>
           <thead>
             <tr>
                 <th  className={styles.Content__partners} scope="col">LGU</th>
               {payPartners.map((payPartner) => (
-                <th key={payPartner.name} className={styles.Content__partners} scope="col">{payPartner.name}</th>
+                <th key={payPartner.name} 
+                  className={styles.Content__partners} 
+                  scope="col"
+                  style={{textAlign: params.measurement.name === "amount" ? "right" : "center"}}
+                >
+                  {payPartner.name}
+                </th>
               ))}
             </tr>
           </thead>
@@ -99,14 +109,15 @@ const Content = (props) => {
             
           {partners.map((partner) => {
             const paymentComponents = payPartners.map((payPartner) => {
-              const count = partner.paypartner[payPartner.name.toLowerCase()];
+              const value = partner.paypartner[payPartner.name.toLowerCase()];
               return (
                 <td
                   key={partner.id + ":" + payPartner.name}
                   className={styles.Content__partners}
+                  style={{textAlign: params.measurement.name === "amount" ? "right" : "center"}}
                   data-label={payPartner.name}
                 >
-                  {count > 0 && count}
+                  {value > 0 && params.measurement.name === "amount" ? currencyFormat(value) : value > 0 && value}
                 </td>
               );
             });

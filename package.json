@@ -1,6 +1,6 @@
 {
   "name": "filipizen-monitoring",
-  "version": "0.1.8",
+  "version": "0.1.10",
   "description": "Filipizen Monitoring",
   "author": "ramesesinc",
   "license": "MIT",
@@ -24,7 +24,8 @@
     "deploy": "gh-pages -d example/build"
   },
   "peerDependencies": {
-    "react": "^16.0.0"
+    "react": "^16.0.0",
+    "rsi-react-web-components": "^0.2.26"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",
@@ -45,14 +46,14 @@
     "prettier": "^2.0.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "^4.0.3"
+    "react-scripts": "^4.0.3",
+    "rsi-react-web-components": "^0.2.26"
   },
   "files": [
     "dist"
   ],
   "dependencies": {
     "highcharts": "^9.0.1",
-    "highcharts-react-official": "^3.0.0",
-    "rsi-react-web-components": "^0.2.26"
+    "highcharts-react-official": "^3.0.0"
   }
 }
