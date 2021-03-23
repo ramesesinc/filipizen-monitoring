@@ -1,0 +1,30 @@
+body {
+    font-family: "Open Sans", sans-serif;
+    line-height: 1.25;
+  }
+  .Content{
+    margin-right: 20px;
+    margin-left: 20px;
+  }
+.Content__months{
+    width: 200px;
+  }
+  .Content__years {
+    width: 100px;
+  }
+  .Content__measurement {
+    width: 150px;
+  }
+  .Content__partners {
+    width: 150px;
+  }
+  .Content__paypartners {
+    width: 150px;
+  }
+  .Content__graph {
+    margin-top: 30px;
+  }
+  .Content__buttons {
+    margin-left: 50px;
+    align-self: flex-end;
+  }

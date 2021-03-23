@@ -26,7 +26,12 @@ body {
 .Content__measurement {
   width: 150px;
 }
-
+.Content__partners {
+  width: 150px;
+}
+.Content__paypartners {
+  width: 150px;
+}
 h3{
   margin: 0px;;
 }

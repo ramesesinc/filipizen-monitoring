@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styles from "./Content.css";
-import { Service, FormPanel, Combobox, currencyFormat } from "rsi-react-web-components";
+import { Service, FormPanel, Combobox, currencyFormat, Button } from "rsi-react-web-components";
 import logo from "/../assets/logo.png"
+
+import LingGraph from './LineGraph';
+import BraGraph from './BarGraph';
 
 const monitorSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
 
@@ -89,6 +92,10 @@ const Content = (props) => {
             <Combobox  name="month" caption="MONTH" items={months}  className={styles.Content__months} expr={month => month.caption} fullWidth={false} />
             <Combobox name="year" caption="YEAR" required={true} items={years} className={styles.Content__years} fullWidth={false}  />
             <Combobox name="measurement" items={measurements} caption="MEASUREMENT" expr={measurements => measurements.caption} required={true} className={styles.Content__measurement} fullWidth={false}  />
+            <Combobox name="partner" caption="LGU" required={true} items={partners} className={styles.Content__partners} fullWidth={false}  />
+            <Combobox name="paypartner" caption="Payment Partner" required={true} items={payPartners} className={styles.Content__paypartners} fullWidth={false}  />
+            <Button>Line Graph</Button>
+            <Button>Bar Graph</Button>
         </FormPanel>
         <table>
           <thead>
