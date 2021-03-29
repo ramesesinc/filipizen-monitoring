@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import styles from "./Content.css";
 import { Service, FormPanel, Combobox, currencyFormat, Button } from "rsi-react-web-components";
 import logo from "/../assets/logo.png"
+import "rsi-react-web-components/dist/index.css";
 
-import LingGraph from './LineGraph';
-import BraGraph from './BarGraph';
+import BarGraph from './BarGraph';
+import LineGraph from "./LineGraph";
 
 const monitorSvc = Service.lookup("CloudPaymentMonitoringService", "epayment");
 
@@ -42,6 +43,7 @@ const Content = (props) => {
     year: initialYear, 
     measurement: measurements[0]
   });
+  const [mode, setMode] = useState();
   
   useEffect(() => {
     monitorSvc.invoke("getInitialInfo", params, (err, info) => {
@@ -81,6 +83,13 @@ const Content = (props) => {
   if (loading) {
     return <div>Loading</div>;
   }
+  if (mode === "linegraph") {
+    return <LineGraph />
+  }
+  if (mode === "bargraph") {
+    return <BarGraph />
+  }
+  
 
   return (
       <div className={styles.Content}>
@@ -92,12 +101,14 @@ const Content = (props) => {
             <Combobox  name="month" caption="MONTH" items={months}  className={styles.Content__months} expr={month => month.caption} fullWidth={false} />
             <Combobox name="year" caption="YEAR" required={true} items={years} className={styles.Content__years} fullWidth={false}  />
             <Combobox name="measurement" items={measurements} caption="MEASUREMENT" expr={measurements => measurements.caption} required={true} className={styles.Content__measurement} fullWidth={false}  />
-            <Combobox name="partner" caption="LGU" required={true} items={partners} className={styles.Content__partners} fullWidth={false}  />
-            <Combobox name="paypartner" caption="Payment Partner" required={true} items={payPartners} className={styles.Content__paypartners} fullWidth={false}  />
-            <Button>Line Graph</Button>
-            <Button>Bar Graph</Button>
+            <Combobox name="partner" caption="LGU" required={true} items={partners} expr={partner => partner.name} className={styles.Content__partner} fullWidth={false}  />
+            <Combobox name="paypartner" caption="Payment Partner" required={true} items={payPartners} expr={paypartner => paypartner.name} className={styles.Content__paypartners} fullWidth={false}  />
+            <div className={styles.Content__buttons}>
+                <Button type="button" onClick={() => setMode("linegraph")}>Line Graph</Button>
+                <Button type="button" onClick={() => setMode("bargraph")}>Bar Graph</Button>
+            </div>
         </FormPanel>
-        <table>
+        <table className={styles.Content__table}>
           <thead>
             <tr>
                 <th  className={styles.Content__partners} scope="col">LGU</th>

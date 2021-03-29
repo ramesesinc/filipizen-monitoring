@@ -7,7 +7,7 @@ import BarGraph from "./components/BarGraph";
 function Monitor() {
   return (
     <MasterTemplate>
-      <BarGraph />
+      <Content />
     </MasterTemplate>
   );
 }

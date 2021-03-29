@@ -5,7 +5,8 @@ import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 import styles from "./LineGraph.css";
 
-
+import Content from './Content';
+import BarGraph from "./BarGraph";
 
 const months = [
     {caption:"ALL",idx:0},
@@ -93,23 +94,31 @@ const LineGraph = (props) => {
       year: initialYear, 
       measurement: measurements[0]
     });
+    const [mode, setMode] = useState();
+    
 
-  
+    if (mode === "content") {
+    return <Content />
+    }
+    if (mode === "bargraph") {
+    return <BarGraph />
+    }
 
   return (
       <div className={styles.Content}>
         <center>
           <img src={logo} width="250"/>
+          <h3>{period} As of March 24, 2021</h3>
         </center>
         <FormPanel  row>
             <Combobox  name="month" caption="MONTH" items={months}  className={styles.Content__months} expr={month => month.caption} fullWidth={false} />
             <Combobox name="year" caption="YEAR" required={true} items={years} className={styles.Content__years} fullWidth={false}  />
             <Combobox name="measurement" items={measurements} caption="MEASUREMENT" expr={measurements => measurements.caption} required={true} className={styles.Content__measurement} fullWidth={false}  />
-            <Combobox name="partner" caption="LGU" required={true} items={partners} className={styles.Content__partners} fullWidth={false}  />
+            <Combobox name="partner" caption="LGU" required={true} items={partners} className={styles.Content__partner} fullWidth={false}  />
             <Combobox name="paypartner" caption="Payment Partner" required={true} items={payPartners} className={styles.Content__paypartners} fullWidth={false}  />
             <div className={styles.Content__buttons}>
-                <Button>Table</Button>
-                <Button>Bar Graph</Button>
+                <Button type="button" onClick={() => setMode("content")}>Table</Button>
+                <Button type="button" onClick={() => setMode("bargraph")}>Bar Graph</Button>
             </div>
         </FormPanel>
       

@@ -26,16 +26,20 @@ body {
 .Content__measurement {
   width: 150px;
 }
-.Content__partners {
+.Content__partner {
   width: 150px;
 }
 .Content__paypartners {
   width: 150px;
 }
+.Content__buttons {
+  margin-left: 50px;
+  align-self: flex-end;
+}
 h3{
   margin: 0px;;
 }
-table {
+.Content__table {
   border: 1px solid #ccc;
   border-collapse: collapse;
   margin: 0;
@@ -44,23 +48,23 @@ table {
   table-layout: fixed;
 }
 
-table tr {
+.Content__table tr {
   background-color: #f8f8f8;
   border: 1px solid #ddd;
   padding: .35em;
 }
 
-table td {
+.Content__table td {
   font-size: 24px;
 }
 
-table th,
-table td {
+.Content__table th,
+.Content__table td {
   padding: .225em;
   text-align: left;
 }
 
-table th {
+.Content__table th {
   letter-spacing: .1em;
   text-transform: uppercase;
   font-size: 27px;
@@ -69,7 +73,7 @@ table th {
   background: #cb9834;
   text-align: left;
 }
-table tr:last-child {
+.Content__table tr:last-child {
   background-color:#d4d4d4;
   font-weight: bold;
 }
@@ -88,14 +92,14 @@ table tr:last-child {
   tr::first-line{
     text-align: center;
   }
-  table {
+  .Content__table {
     border: 0;
   }
-  table caption {
+  .Content__table caption {
     font-size: 1.3em;
   }
   
-  table thead {
+  .Content__table thead {
     border: none;
     clip: rect(0 0 0 0);
     height: 1px;
@@ -106,7 +110,7 @@ table tr:last-child {
     width: 1px;
   }
   
-  table tr {
+  .Content__table tr {
     border-bottom: 3px solid #ddd;
     display: block;
     margin-bottom: .625em;
@@ -114,7 +118,7 @@ table tr:last-child {
     padding-right: 20px;
   }
   
-  table td {
+  .Content__table td {
     border-bottom: 1px solid #ddd;
     display: block;
     font-size: .8em !important;
@@ -122,7 +126,7 @@ table tr:last-child {
     height: 21px;
   }
   
-  table td::before {
+  .Content__table td::before {
     /*
     * aria-label has no advantage, it won't be read inside a table
     content: attr(aria-label);
@@ -133,7 +137,7 @@ table tr:last-child {
     text-transform: uppercase;
   }
   
-  table td:last-child {
+  .Content__table td:last-child {
     border-bottom: 0;
   }
 }
